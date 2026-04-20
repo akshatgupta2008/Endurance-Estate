@@ -86,25 +86,20 @@ Follow these instructions to get the project up and running on your local machin
 
 ### Installation & Setup
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/AbhinavKaintura/Real-Estate-Marketplace.git
-    cd real-estate-marketplace
-    ```
 
-2.  **Firebase Configuration:**
+1.  **Firebase Configuration:**
     *   Create a new project on the [Firebase Console](https://console.firebase.google.com/).
     *   Go to **Project settings** > **Service accounts** and generate a new private key. This will download a JSON file.
     *   Go to **Project settings** > **General** and find your web app's Firebase configuration object.
     *   Update the configuration in `src/firebase/firebase.ts` with your project's credentials.
 
-3.  **Environment Variables:**
+2.  **Environment Variables:**
     Create a `.env.local` file in the root directory for your frontend environment variables (if any).
     ```
     NEXT_PUBLIC_API_URL=http://localhost:8000
     ```
 
-4.  **Run with Docker Compose:**
+3.  **Run with Docker Compose:**
     This is the simplest way to start the entire application (frontend and backend).
     ```bash
     docker-compose up --build -d
