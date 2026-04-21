@@ -3,7 +3,8 @@ from pydantic import BaseModel
 import joblib
 import numpy as np
 from fastapi.middleware.cors import CORSMiddleware  # Import CORSMiddleware
-from datetime import datetime
+from datetime import datetime, timezone
+import os
 
 # Load your trained model
 model = joblib.load("house_price_model.pkl")
@@ -83,7 +84,7 @@ async def predict(features: Features):
         predicted_price = float(model.predict(input_features)[0])
 
         # Ensure: newer property => higher price (monotonic year-based adjustment)
-        current_year = datetime.utcnow().year
+        current_year = datetime.now(timezone.utc).year
         year_built = int(features.YearBuilt)
         year_built = max(1800, min(year_built, current_year + 1))
 
@@ -111,11 +112,22 @@ async def predict(features: Features):
             year_factor = post_low + t * (post_high - post_low)
 
         adjusted_price = max(0.0, predicted_price) * year_factor
+
+        # Scale to match today's market rates (INR). Tune via env var.
+        try:
+            market_multiplier = float(os.getenv("MARKET_PRICE_MULTIPLIER", "50"))
+        except ValueError:
+            market_multiplier = 50.0
+
+        market_multiplier = max(1.0, market_multiplier)
+        adjusted_price *= market_multiplier
+
         adjusted_price_int = int(round(adjusted_price))
         print(
             "Predicted price (raw):", predicted_price,
             "YearBuilt:", year_built,
             "Year factor:", year_factor,
+            "Market multiplier:", market_multiplier,
             "Adjusted:", adjusted_price_int,
         )
 
