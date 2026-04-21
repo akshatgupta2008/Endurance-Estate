@@ -53,10 +53,10 @@ def predict_price(features):
     base_price = 150000
     
     if features.get('Area'):
-        base_price += features['Area'] * 100
+        base_price += features['Area'] * 10000
     
     if features.get('Bedrooms'):
-        base_price += features['Bedrooms'] * 25000
+        base_price += features['Bedrooms'] * 250000
     
     if features.get('Bathrooms'):
         base_price += features['Bathrooms'] * 15000
@@ -77,10 +77,10 @@ def predict_price(features):
             pivot_year = 2020
             max_year = current_year + 1
 
-            pre_low = 0.85
-            pre_high = 1.00
-            post_low = 1.08
-            post_high = 1.20
+            pre_low = 0.70
+            pre_high = 0.95
+            post_low = 1.15
+            post_high = 1.35
 
             if year_built < pivot_year:
                 denom = max(1, (pivot_year - 1) - baseline_year)

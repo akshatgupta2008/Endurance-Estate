@@ -53,6 +53,8 @@ async def root():
 @app.post("/predict/")
 async def predict(features: Features):
     try:
+        pivot_year = 2020
+
         # Handle the encoding of categorical features
         location_mapping = {'Downtown': 1, 'Urban': 2, 'Suburban': 3, 'Rural': 4}
         condition_mapping = {'Fair': 1, 'Excellent': 2, 'Poor': 3, 'Good': 4}
@@ -61,12 +63,15 @@ async def predict(features: Features):
         encoded_condition = condition_mapping.get(features.Condition, 0)  # Default to 0 if not found
 
         # Prepare the features for the model
+        # NOTE: The explicit year_factor logic below enforces "newer year => higher price".
+        # To prevent the ML model from contradicting that rule, we feed a fixed pivot year
+        # into the model and let year_factor control the year effect.
         input_features = np.array([
             features.Area,
             features.Bedrooms,
             features.Bathrooms,
             features.Floors,
-            features.YearBuilt,
+            pivot_year,
             encoded_location,  # Encoded Location
             encoded_condition,  # Encoded Condition
             features.Garage
@@ -84,16 +89,15 @@ async def predict(features: Features):
 
         # Piecewise scaling so 2020+ years are valued higher than <2020.
         baseline_year = 1980
-        pivot_year = 2020
         max_year = current_year + 1
 
-        # < 2020: scale up to 1.00 by 2019
-        pre_low = 0.85
-        pre_high = 1.00
+        # < 2020: much lower weighting for older properties (e.g., near year 2000)
+        pre_low = 0.70
+        pre_high = 0.95
 
-        # >= 2020: start at a higher baseline and scale up further
-        post_low = 1.08
-        post_high = 1.20
+        # >= 2020: clearly higher weighting for newer properties (e.g., near 2026)
+        post_low = 1.15
+        post_high = 1.35
 
         if year_built < pivot_year:
             denom = max(1, (pivot_year - 1) - baseline_year)
