@@ -82,17 +82,29 @@ async def predict(features: Features):
         year_built = int(features.YearBuilt)
         year_built = max(1800, min(year_built, current_year + 1))
 
+        # Piecewise scaling so 2020+ years are valued higher than <2020.
         baseline_year = 1980
+        pivot_year = 2020
         max_year = current_year + 1
-        low_factor = 0.85
-        high_factor = 1.15
 
-        if max_year <= baseline_year:
-            year_factor = 1.0
-        else:
-            t = (year_built - baseline_year) / (max_year - baseline_year)
+        # < 2020: scale up to 1.00 by 2019
+        pre_low = 0.85
+        pre_high = 1.00
+
+        # >= 2020: start at a higher baseline and scale up further
+        post_low = 1.08
+        post_high = 1.20
+
+        if year_built < pivot_year:
+            denom = max(1, (pivot_year - 1) - baseline_year)
+            t = (year_built - baseline_year) / denom
             t = max(0.0, min(1.0, t))
-            year_factor = low_factor + t * (high_factor - low_factor)
+            year_factor = pre_low + t * (pre_high - pre_low)
+        else:
+            denom = max(1, max_year - pivot_year)
+            t = (year_built - pivot_year) / denom
+            t = max(0.0, min(1.0, t))
+            year_factor = post_low + t * (post_high - post_low)
 
         adjusted_price = max(0.0, predicted_price) * year_factor
         adjusted_price_int = int(round(adjusted_price))
