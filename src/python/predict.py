@@ -53,7 +53,7 @@ def predict_price(features):
     base_price = 150000
     
     if features.get('Area'):
-        base_price += features['Area'] * 10000
+        base_price += features['Area'] * 100000
     
     if features.get('Bedrooms'):
         base_price += features['Bedrooms'] * 250000
