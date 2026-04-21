@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import numpy as np
 from fastapi.middleware.cors import CORSMiddleware  # Import CORSMiddleware
+from datetime import datetime
 
 # Load your trained model
 model = joblib.load("house_price_model.pkl")
@@ -74,12 +75,36 @@ async def predict(features: Features):
         print(input_features)
 
         # Get prediction
-        predicted_price = model.predict(input_features)[0]
-        print("Predicted price:", predicted_price)
+        predicted_price = float(model.predict(input_features)[0])
+
+        # Ensure: newer property => higher price (monotonic year-based adjustment)
+        current_year = datetime.utcnow().year
+        year_built = int(features.YearBuilt)
+        year_built = max(1800, min(year_built, current_year + 1))
+
+        baseline_year = 1980
+        max_year = current_year + 1
+        low_factor = 0.85
+        high_factor = 1.15
+
+        if max_year <= baseline_year:
+            year_factor = 1.0
+        else:
+            t = (year_built - baseline_year) / (max_year - baseline_year)
+            t = max(0.0, min(1.0, t))
+            year_factor = low_factor + t * (high_factor - low_factor)
+
+        adjusted_price = max(0.0, predicted_price) * year_factor
+        adjusted_price_int = int(round(adjusted_price))
+        print(
+            "Predicted price (raw):", predicted_price,
+            "YearBuilt:", year_built,
+            "Year factor:", year_factor,
+            "Adjusted:", adjusted_price_int,
+        )
 
         # Return the predicted price in a dictionary as a JSON response
-        return {"predicted_price": str(predicted_price)}
+        return {"predicted_price": adjusted_price_int}
 
     except Exception as e:
-        # Return a proper error message in case of exception
-        return {"error": str(e)}, 500
+        raise HTTPException(status_code=500, detail=str(e))
