@@ -19,7 +19,7 @@ const Contact = () => {
     const { name, email, phone, query } = formData;
     const recipient = "vishwabandhufoundation.ngo@gmail.com"; // Replace with your email
     const subject = `Query from ${name}`;
-    const body = query;
+    const body = `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nQuery:\n${query}`;
     return `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 

@@ -81,10 +81,26 @@ Follow these instructions to get the project up and running on your local machin
 ### Prerequisites
 
 *   [Git](https://git-scm.com/)
-*   [Node.js](https://nodejs.org/) (v18 or later)
+*   [Node.js](https://nodejs.org/) (v18 or later; Node 20 LTS recommended)
 *   [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
+*   [Python](https://www.python.org/) (3.11+) if you want to use `/api/price-predict`
 
 ### Installation & Setup
+
+Important: run all `npm` commands from this folder (the one that contains `package.json`):
+
+```bash
+cd Real-Estate-Marketplace
+```
+
+#### Run locally (recommended for development)
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
 
 
 1.  **Firebase Configuration:**
@@ -97,6 +113,18 @@ Follow these instructions to get the project up and running on your local machin
     Create a `.env.local` file in the root directory for your frontend environment variables (if any).
     ```
     NEXT_PUBLIC_API_URL=http://localhost:8000
+    ```
+
+    If you want the maintenance email endpoint to work, also set:
+    ```
+    EMAIL_USER=your_gmail_address@gmail.com
+    EMAIL_APP_PASSWORD=your_gmail_app_password
+    ```
+
+    The price prediction endpoint (`POST /api/price-predict`) runs `src/python/predict.py` via a local Python interpreter.
+    If `python` is not on your PATH, set:
+    ```
+    PYTHON_PATH=C:\\path\\to\\python.exe
     ```
 
 3.  **Run with Docker Compose:**
@@ -145,7 +173,7 @@ Base URL: `http://localhost:3000/api`
 
 | Method | Endpoint                  | Description                               |
 | :----- | :------------------------ | :---------------------------------------- |
-| `POST` | `/price-predict`          | A proxy to the Python backend's `/predict` endpoint. |
+| `POST` | `/price-predict`          | Runs a local Python prediction script and returns `{ predicted_price }`. |
 | `POST` | `/send-mtnc-to-owner`     | Submits a maintenance request from a tenant to a property owner. |
 
 ## 🤝 Contributing

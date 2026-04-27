@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 
 const AboutUs = () => {
@@ -27,7 +26,7 @@ const AboutUs = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-6">Welcome to Endurance Estates</h2>
           <p className="text-gray-600 text-lg mb-6">
             At Endurance Estates, we revolutionize the real estate experience by integrating advanced technology with seamless property transactions. 
-            Whether you're looking to buy, sell, rent, or predict property prices, our platform provides a comprehensive solution for all your real estate needs.
+            Whether you&apos;re looking to buy, sell, rent, or predict property prices, our platform provides a comprehensive solution for all your real estate needs.
           </p>
           
           <div className="bg-emerald-50 border-l-4 border-emerald-600 p-4 mt-8">

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { addDoc, collection, where, limit, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 
@@ -14,7 +14,7 @@ interface MaintenanceRequest {
     issue: string;
     urgency: string;
     status: string;
-    createdAt: any;
+    createdAt: Date;
     preferredDate?: string | null;
     preferredTime?: string | null;
 }
@@ -51,7 +51,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
     ];
 
     // Function to fetch existing maintenance requests
-    const fetchExistingRequests = async (houseIdValue: string) => {
+    const fetchExistingRequests = useCallback(async (houseIdValue: string) => {
         try {
             setLoadingRequests(true);
             const requestsQuery = query(
@@ -85,7 +85,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
         } finally {
             setLoadingRequests(false);
         }
-    };
+    }, [tenantId]);
 
     useEffect(() => {
         const checkHouseId = async () => {
@@ -132,7 +132,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
         };
         
         checkHouseId();
-    }, [tenantId]);
+    }, [fetchExistingRequests, tenantId]);
 
     const toggleCategory = (category: string) => {
         setSelectedCategories(prev =>
@@ -142,7 +142,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
         );
     };
 
-    const sendOrderEmail = async (issueDetails: any) => {
+    const sendOrderEmail = async (issueDetails: Record<string, unknown>) => {
         try {
             const response = await fetch('/api/send-mtnc-to-owner', {
                 method: 'POST',
@@ -157,7 +157,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            await response.json();
             return true;
         } catch (error) {
             console.error('Error sending email:', error);
@@ -520,7 +520,7 @@ const MaintenanceRequestForm: React.FC<MaintenanceRequestFormProps> = ({ tenantI
                                             : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
-                                        Yes, enter if I'm not home
+                                        Yes, enter if I&apos;m not home
                                     </button>
                                     <button
                                         type="button"

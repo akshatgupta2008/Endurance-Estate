@@ -24,7 +24,7 @@ const PropertyCard = () => {
 
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [dominantColor, setDominantColor] = useState('#3b82f6'); 
 
 
@@ -66,6 +66,7 @@ const PropertyCard = () => {
                 }
             } catch (err) {
                 console.error('Error fetching property:', err);
+                setError(err instanceof Error ? err.message : 'Failed to load property');
             } finally {
                 setLoading(false);
             }
@@ -187,7 +188,7 @@ const PropertyCard = () => {
               currency: 'INR',
               description: `Buy/Rent: ${property.title}`,
               image: '',
-              handler: async function (response: any) {
+                            handler: async function (response: unknown) {
                 try {
                   console.log('Payment successful:', response);
                 //   router.push(`/payment-successful-gaumata?donorId=${donorId}`);
@@ -211,11 +212,17 @@ const PropertyCard = () => {
               },
             };
       
-            const rzp1 = new (window as any).Razorpay(options);
+                        const RazorpayCtor = (window as unknown as { Razorpay?: new (opts: typeof options) => { open: () => void; on: (event: string, cb: (payload: unknown) => void) => void } }).Razorpay;
+                        if (!RazorpayCtor) {
+                            setError('Payment system not loaded. Please refresh and try again.');
+                            return;
+                        }
+
+                        const rzp1 = new RazorpayCtor(options);
       
-            rzp1.on('payment.failed', function (response: any) {
-              console.error('Donation failed:', response.error);
-            });
+                        rzp1.on('payment.failed', function (response: unknown) {
+                            console.error('Donation failed:', response);
+                        });
       
             rzp1.open();
       

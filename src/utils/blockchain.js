@@ -75,7 +75,7 @@ export const createAgreementHash = async (agreementData) => {
 export const generateBlockchainTransaction = async (agreementData) => {
   try {
     // Initialize blockchain connection
-    const { contract, signer } = await initializeBlockchain();
+    const { contract } = await initializeBlockchain();
     
     // Get seller and buyer addresses
     // Note: In a real implementation, these would be the actual Ethereum addresses of the parties
@@ -109,7 +109,7 @@ export const generateBlockchainTransaction = async (agreementData) => {
       try {
         const parsedLog = contract.interface.parseLog(log);
         return parsedLog.name === 'AgreementCreated';
-      } catch (e) {
+      } catch {
         return false;
       }
     });

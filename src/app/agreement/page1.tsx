@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import Image from 'next/image';
-import { FiDownload, FiCheck, FiFileText, FiDollarSign, FiHome, FiMapPin, FiUser, FiCalendar, FiHash, FiAlertCircle } from 'react-icons/fi';
+import { FiDownload, FiCheck, FiFileText, FiDollarSign, FiHome, FiMapPin, FiUser, FiHash, FiAlertCircle } from 'react-icons/fi';
 import { generateBlockchainTransaction, verifyAgreement } from '@/utils/blockchain';
 
 interface PropertyData {
@@ -69,7 +69,6 @@ export default function PropertyAgreement() {
   const [buyerSigned, setBuyerSigned] = useState<boolean>(false);
   const [generatingAgreement, setGeneratingAgreement] = useState<boolean>(false);
   const [agreementGenerated, setAgreementGenerated] = useState<boolean>(false);
-  const [walletConnected, setWalletConnected] = useState<boolean>(false);
   const [walletError, setWalletError] = useState<string>('');
 
   useEffect(() => {
@@ -108,8 +107,6 @@ export default function PropertyAgreement() {
     
     // Check if wallet is available
     if (typeof window !== 'undefined' && window.ethereum) {
-      setWalletConnected(true);
-      
       // Listen for account changes
       window.ethereum.on('accountsChanged', () => {
         // Reset signed status when account changes

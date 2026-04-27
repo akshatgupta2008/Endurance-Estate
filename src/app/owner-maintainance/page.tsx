@@ -1,23 +1,25 @@
 'use client';
-import { useState, useEffect, SetStateAction } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, updateDoc, limit } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
+
+interface MaintenanceRequest {
+    id: string;
+    houseId: string;
+    categories: string[];
+    issue: string;
+    urgency: string;
+    status: string;
+    createdAt: Date;
+    preferredDate: string | null;
+    preferredTime: string | null;
+    entryPermission: string | boolean | null;
+}
 
 const OwnerMaintenancePage = () => {
     const [houseId, setHouseId] = useState('');
     const [propertyName, setPropertyName] = useState('');
-    const [maintenanceRequests, setMaintenanceRequests] = useState<{ 
-        id: string; 
-        houseId: any; 
-        categories: any; 
-        issue: any; 
-        urgency: any; 
-        status: any; 
-        createdAt: Date; 
-        preferredDate: any; 
-        preferredTime: any; 
-        entryPermission: any; 
-    }[]>([]);
+    const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -81,26 +83,26 @@ const OwnerMaintenancePage = () => {
             );
 
             const requestsSnapshot = await getDocs(requestsQuery);
-            const requests: ((prevState: never[]) => never[]) | { id: string; houseId: any; categories: any; issue: any; urgency: any; status: any; createdAt: any; preferredDate: any; preferredTime: any; entryPermission: any; }[] = [];
+            const requests: MaintenanceRequest[] = [];
 
             requestsSnapshot.forEach(doc => {
                 const data = doc.data();
                 requests.push({
                     id: doc.id,
-                    houseId: data.houseId,
-                    categories: data.categories,
-                    issue: data.issue,
-                    urgency: data.urgency,
-                    status: data.status,
-                    createdAt: data.createdAt?.toDate() || new Date(),
-                    preferredDate: data.preferredDate,
-                    preferredTime: data.preferredTime,
-                    entryPermission: data.entryPermission
+                    houseId: typeof data.houseId === 'string' ? data.houseId : String(data.houseId ?? ''),
+                    categories: Array.isArray(data.categories) ? data.categories.map(String) : [],
+                    issue: typeof data.issue === 'string' ? data.issue : String(data.issue ?? ''),
+                    urgency: typeof data.urgency === 'string' ? data.urgency : String(data.urgency ?? ''),
+                    status: typeof data.status === 'string' ? data.status : String(data.status ?? ''),
+                    createdAt: data.createdAt?.toDate?.() || new Date(),
+                    preferredDate: typeof data.preferredDate === 'string' ? data.preferredDate : null,
+                    preferredTime: typeof data.preferredTime === 'string' ? data.preferredTime : null,
+                    entryPermission: (data.entryPermission ?? null) as string | boolean | null
                 });
             });
 
             // Sort by date (newest first)
-            requests.sort((a, b) => b.createdAt - a.createdAt);
+            requests.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
             setMaintenanceRequests(requests);
 
         } catch (error) {

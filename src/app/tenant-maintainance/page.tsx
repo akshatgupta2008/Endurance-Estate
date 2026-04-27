@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { addDoc, collection, where, limit, query, getDocs, orderBy } from 'firebase/firestore';
+import { addDoc, collection, where, limit, query, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 
 
@@ -11,7 +11,7 @@ interface MaintenanceRequest {
     issue: string;
     urgency: string;
     status: string;
-    createdAt: any;
+    createdAt: Date;
     preferredDate?: string | null;
     preferredTime?: string | null;
 }
@@ -141,7 +141,7 @@ const MaintenanceRequestForm = () => {
         );
     };
 
-    const sendOrderEmail = async (issueDetails: any) => {
+    const sendOrderEmail = async (issueDetails: Record<string, unknown>) => {
         try {
             const response = await fetch('/api/send-mtnc-to-owner', {
                 method: 'POST',
@@ -156,7 +156,7 @@ const MaintenanceRequestForm = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            await response.json();
             return true;
         } catch (error) {
             console.error('Error sending email:', error);
@@ -518,7 +518,7 @@ const MaintenanceRequestForm = () => {
                                             : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
-                                        Yes, enter if I'm not home
+                                        Yes, enter if I&apos;m not home
                                     </button>
                                     <button
                                         type="button"
@@ -539,7 +539,7 @@ const MaintenanceRequestForm = () => {
                                     type="email"
                                     value={owner_email}
                                     onChange={(e) => setOwnerEmail(e.target.value)}
-                                    placeholder="Enter Owner's Email"
+                                    placeholder="Enter Owner&apos;s Email"
                                     className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                                     required
                                 />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import React from "react";
 import { Inter, Space_Grotesk, Inconsolata, Dancing_Script, Montserrat } from 'next/font/google';
@@ -45,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${spaceGrotesk.variable} ${inconsolataFont.variable} ${dancingFont.variable} ${montserratFont.variable} antialiased`}

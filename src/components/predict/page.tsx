@@ -45,12 +45,12 @@ const Predict = () => {
 
             console.log("Sending features:", featureObject); 
 
-            const response = await fetch("http://127.0.0.1:8000/predict/", {
+            const response = await fetch("/api/price-predict", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(featureObject)  
+                body: JSON.stringify({ features: featureObject })
             });
 
             console.log("Response:", response);
@@ -222,9 +222,10 @@ const Predict = () => {
                     <div className="pt-6">
                         <button
                             type="submit"
+                            disabled={isLoading}
                             className="w-full bg-gray-800 text-white py-4 px-6 hover:bg-gray-700 transition duration-300 font-medium tracking-wide text-lg"
                         >
-                            ESTIMATE PROPERTY VALUE
+                            {isLoading ? 'ESTIMATING...' : 'ESTIMATE PROPERTY VALUE'}
                         </button>
                     </div>
                 </form>

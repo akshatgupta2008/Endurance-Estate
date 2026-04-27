@@ -74,7 +74,7 @@ export const Hero = () => {
               variants={textHoverVariants}
               className="text-white/80 text-xl font-light cursor-pointer font-montserrat"
             >
-              Excited to see your future home? Let's get started.
+              Excited to see your future home? Let&apos;s get started.
             </motion.p>
             
             <motion.div

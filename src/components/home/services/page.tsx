@@ -7,7 +7,6 @@ import auctionImg from '../../../../public/live-auction.jpg';
 import rentalImage from '../../../../public/rental-property.jpg'; 
 import maintainImg from '../../../../public/lease-maintenance.jpg'; 
 import { ArrowRight } from 'lucide-react';
-import message from "@/../public/message.png"; 
 
 const Services = () => {
   const containerVariants = {

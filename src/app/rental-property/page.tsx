@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
 import Image from 'next/image';
-import { FaBed, FaBath } from 'react-icons/fa';
-import { BiArea } from 'react-icons/bi';
 import { HiOutlineLocationMarker } from 'react-icons/hi';
 import { BsHeart, BsShare, BsFacebook } from 'react-icons/bs';
 import Link from 'next/link';

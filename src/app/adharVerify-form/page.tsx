@@ -3,7 +3,6 @@
 'use client';
 import { useState, FormEvent, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { FiUser, FiPhone, FiCreditCard, FiLock, FiCheck } from 'react-icons/fi';
 import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
@@ -42,7 +41,6 @@ export default function AadhaarVerification() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const router = useRouter();
 
@@ -118,6 +116,7 @@ export default function AadhaarVerification() {
       console.log('Phone OTP sent: 123456');
       
     } catch (err) {
+      console.error('Failed to send phone OTP:', err);
       setError('Failed to send OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -149,6 +148,7 @@ export default function AadhaarVerification() {
       console.log('Aadhaar OTP sent: 654321');
       
     } catch (err) {
+      console.error('Failed to send Aadhaar OTP:', err);
       setError('Failed to send Aadhaar verification OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -181,6 +181,7 @@ export default function AadhaarVerification() {
       }
       
     } catch (err) {
+      console.error('Failed to verify phone OTP:', err);
       setError('Failed to verify OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -213,6 +214,7 @@ export default function AadhaarVerification() {
       }
       
     } catch (err) {
+      console.error('Failed to verify Aadhaar OTP:', err);
       setError('Failed to verify Aadhaar OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -278,7 +280,6 @@ export default function AadhaarVerification() {
     try {
       // Create or get user ID
       const userIdValue = await createOrGetUser();
-      setUserId(userIdValue);
       
       // Show success message
       setSuccess(true);
@@ -426,7 +427,7 @@ export default function AadhaarVerification() {
                   </button>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">
-                  For demo: use "123456" as the OTP
+                  For demo: use &quot;123456&quot; as the OTP
                 </p>
               </div>
             )}
@@ -510,7 +511,7 @@ export default function AadhaarVerification() {
                   </button>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">
-                  For demo: use "654321" as the OTP
+                  For demo: use &quot;654321&quot; as the OTP
                 </p>
               </div>
             )}

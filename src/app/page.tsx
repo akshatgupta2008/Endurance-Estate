@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/nav-bar/page';
-import { m as motion, LazyMotion, domAnimation } from 'framer-motion';
+import { LazyMotion, domAnimation } from 'framer-motion';
 import Head from 'next/head';
 import {Hero} from '@/components/home/hero/page';
 import Services from '@/components/home/services/page';

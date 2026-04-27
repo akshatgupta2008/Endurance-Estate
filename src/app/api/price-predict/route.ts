@@ -1,62 +1,122 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
+import fs from 'fs';
 import path from 'path';
-// import { GoogleGenerativeAI } from "@google/generative-ai";
 
+export const runtime = 'nodejs';
 
-export async function POST(req: Request, res: Response): Promise<void> {
-    console.log("Request body:", req.body);
-    console.log("Hello ");
+function resolvePythonExecutable(): string {
+    const fromEnv = process.env.PYTHON_PATH;
+    if (fromEnv) return fromEnv;
 
+    const candidates: string[] = [];
+    if (process.platform === 'win32') {
+        candidates.push(path.join(process.cwd(), '.venv', 'Scripts', 'python.exe'));
+        candidates.push(path.join(process.cwd(), '.venv', 'Scripts', 'python'));
+    } else {
+        candidates.push(path.join(process.cwd(), '.venv', 'bin', 'python3'));
+        candidates.push(path.join(process.cwd(), '.venv', 'bin', 'python'));
+    }
+    candidates.push('python3');
+    candidates.push('python');
 
+    for (const candidate of candidates) {
+        try {
+            if (candidate === 'python' || candidate === 'python3') return candidate;
+            if (fs.existsSync(candidate)) return candidate;
+        } catch {
+            // ignore
+        }
+    }
 
-    try {
-        const { features } = await req.json();
-        console.log("Features:", features);
-        // Run Python script to make prediction
-        const pythonScript = path.join(process.cwd(), 'python', 'predict.py');
-        const python = spawn('python', [pythonScript, JSON.stringify(features)]);
+    return 'python';
+}
 
-        let prediction = '';
-        let errors = '';
+function runPythonPrediction(pythonExe: string, scriptPath: string, features: unknown): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const python = spawn(pythonExe, [scriptPath, JSON.stringify(features)], {
+            windowsHide: true,
+            env: {
+                ...process.env,
+                PYTHONIOENCODING: 'utf-8'
+            }
+        });
 
-        // Collect data from script
+        let stdout = '';
+        let stderr = '';
+
         python.stdout.on('data', (data) => {
-            prediction += data.toString();
+            stdout += data.toString();
         });
 
         python.stderr.on('data', (data) => {
-            errors += data.toString();
+            stderr += data.toString();
         });
 
-        // When the script closes
-        return new Promise<void>((resolve) => {
-            python.on('close', (code) => {
-                if (code !== 0) {
-                    console.error(`Python script exited with code ${code}`);
-                    console.error(errors);
-                    res.status(500).json({ error: 'Error executing prediction script' });
-                } else {
-                    try {
-                        const predictionValue = JSON.parse(prediction.trim());
-                        res.status(200).json({ prediction: predictionValue });
-                    } catch (e) {
-                        console.error('Error parsing prediction output:', e);
-                        res.status(500).json({ error: 'Error parsing prediction output' });
-                    }
-                }
-                resolve();
-            });
+        python.on('error', (err) => {
+            reject(err);
         });
-        // const { text } = await req.json();
-        // const apiKey = process.env.GEMINI_API_KEY;
-        // const genAI = new GoogleGenerativeAI(apiKey);
-        // const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        // const result = await model.generateContent(text);
 
-        return NextResponse.json({ 'prediction': 1000000 });
-    }
-    catch (error) {
-        return NextResponse.json({ error: "Failed to get response from gemini" }, { status: 500 });
+        python.on('close', (code) => {
+            if (code !== 0) {
+                reject(new Error(stderr || `Python exited with code ${code}`));
+                return;
+            }
+            resolve(stdout);
+        });
+    });
+}
+
+export async function POST(req: Request) {
+    try {
+        const body: unknown = await req.json();
+        const features = (() => {
+            if (typeof body !== 'object' || body === null) return undefined;
+
+            // Support both shapes:
+            // 1) { features: { ... } }
+            // 2) { ...features }
+            if ('features' in body) {
+                return (body as Record<string, unknown>).features;
+            }
+            return body;
+        })();
+
+        if (!features || typeof features !== 'object') {
+            return NextResponse.json(
+                { error: 'Missing or invalid `features` in request body' },
+                { status: 400 }
+            );
+        }
+
+        const pythonScript = path.join(process.cwd(), 'src', 'python', 'predict.py');
+        if (!fs.existsSync(pythonScript)) {
+            return NextResponse.json(
+                { error: `Prediction script not found at ${pythonScript}` },
+                { status: 500 }
+            );
+        }
+
+        const pythonExe = resolvePythonExecutable();
+        const rawOutput = await runPythonPrediction(pythonExe, pythonScript, features);
+
+        try {
+            const predictionValue = JSON.parse(rawOutput.trim());
+            return NextResponse.json({ predicted_price: predictionValue });
+        } catch (e) {
+            return NextResponse.json(
+                {
+                    error: 'Error parsing prediction output',
+                    details: e instanceof Error ? e.message : String(e),
+                    rawOutput
+                },
+                { status: 500 }
+            );
+        }
+    } catch (error) {
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : 'Failed to run prediction' },
+            { status: 500 }
+        );
     }
 }

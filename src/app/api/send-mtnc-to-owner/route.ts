@@ -1,35 +1,24 @@
 import { NextResponse } from 'next/server';
 import { createTransport } from 'nodemailer';
 
-console.log('Email configuration:', {
-    user: process.env.EMAIL_USER ? 'Set' : 'Not set',
-    pass: process.env.EMAIL_APP_PASSWORD ? 'Set' : 'Not set'
-});
-
-const transporter = createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_APP_PASSWORD
-    },
-    debug: true,
-    logger: true
-});
-
-transporter.verify(function (error: any, success: any) {
-    if (error) {
-        console.error('Transporter verification error:', error);
-    } else {
-        console.log('Server is ready to take our messages');
-    }
-});
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
     try {
-        // console.log('Received email request');
+    const emailUser = process.env.EMAIL_USER;
+    const emailAppPassword = process.env.EMAIL_APP_PASSWORD;
+
+    if (!emailUser || !emailAppPassword) {
+      return NextResponse.json(
+        {
+          message: 'Email is not configured on the server',
+          error: 'Missing EMAIL_USER or EMAIL_APP_PASSWORD'
+        },
+        { status: 500 }
+      );
+    }
 
         const body = await request.json();
-        // console.log('Request body:', JSON.stringify(body, null, 2));
 
         const {
             houseId,
@@ -44,6 +33,24 @@ export async function POST(request: Request) {
             // tenant_email,   // Tenant's email
             // idToken
         } = body;
+
+          if (!owner_email) {
+            return NextResponse.json(
+              { message: 'Failed to send email', error: 'Missing owner_email' },
+              { status: 400 }
+            );
+          }
+
+          const isDev = process.env.NODE_ENV !== 'production';
+          const transporter = createTransport({
+            service: 'gmail',
+            auth: {
+              user: emailUser,
+              pass: emailAppPassword
+            },
+            debug: isDev,
+            logger: isDev
+          });
 
         const emailContent = `
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; background-color: #f9f9f9; padding: 15px; margin: 0; line-height: 1.6;">
@@ -124,30 +131,12 @@ export async function POST(request: Request) {
 </body>
 `;
 
-        // Log email attempt
-        // console.log('Attempting to send email to:', owner_email);
-
         await transporter.sendMail({
-            from: `"${tenantName} via Property Manager" <${process.env.EMAIL_USER}>`, // Shows tenant as sender
-            to: owner_email,
-            subject: 'New Maintenance Request for Your Property',
-            html: emailContent
+          from: `"${tenantName || 'Tenant'} via Property Manager" <${emailUser}>`,
+          to: owner_email,
+          subject: 'New Maintenance Request for Your Property',
+          html: emailContent
         });
-
-
-
-        try {
-            await transporter.sendMail({
-                from: process.env.EMAIL_USER,
-                to: owner_email,
-                subject: 'New Maintenance Request Received',
-                html: emailContent
-            });
-            console.log('Email sent successfully');
-        } catch (emailError) {
-            console.error('Error in sendMail:', emailError);
-            throw emailError;
-        }
 
         return NextResponse.json({ message: 'Email sent successfully' });
     } catch (error) {
