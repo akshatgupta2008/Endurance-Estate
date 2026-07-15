@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase';
-import Image from 'next/image';
 import { FiDownload, FiCheck, FiFileText, FiDollarSign, FiHome, FiMapPin, FiUser, FiHash, FiAlertCircle } from 'react-icons/fi';
 import { generateBlockchainTransaction, verifyAgreement } from '@/utils/blockchain';
 
@@ -356,11 +355,10 @@ BUYER SIGNATURE: ${agreementData.buyerName} (Signed electronically)
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="md:w-1/3">
                     <div className="aspect-w-16 aspect-h-9 w-full h-48 relative rounded-lg overflow-hidden">
-                      <Image 
-                        src={property.image} 
+                      <img
+                        src={property.image}
                         alt={property.title}
-                        fill
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                       />
                     </div>
                   </div>

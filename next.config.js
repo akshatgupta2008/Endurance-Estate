@@ -12,20 +12,16 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/predict',  // Match API requests under `/api/*`
-        destination: process.env.NODE_ENV === 'production' 
-          ? 'http://backend:8000/predict'  // Docker service name
-          : 'http://127.0.0.1:8000/predict',  // Local development
+        source: '/predict',
+        destination:
+          process.env.NODE_ENV === 'production'
+            ? 'http://backend:8000/predict'
+            : 'http://127.0.0.1:8000/predict',
       },
     ];
   },
-  
-  // Add image configuration for Firebase Storage
   images: {
-    domains: [
-      'firebasestorage.googleapis.com',
-      'storage.googleapis.com'
-    ],
+    domains: ['firebasestorage.googleapis.com', 'storage.googleapis.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -33,7 +29,7 @@ const nextConfig = {
         pathname: '**',
       },
     ],
-    unoptimized: true, // This helps with Firebase Storage images
+    unoptimized: true,
   },
 };
 
